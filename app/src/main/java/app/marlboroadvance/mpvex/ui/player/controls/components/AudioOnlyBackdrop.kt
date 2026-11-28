@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +28,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.marlboroadvance.mpvex.preferences.AppearancePreferences
+import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.player.TrackNode
+import org.koin.compose.koinInject
 
 /**
  * Full-screen "now playing" view for files without a video track, so audio doesn't play over a
@@ -42,15 +46,23 @@ fun AudioOnlyBackdrop(
 ) {
   val colors = MaterialTheme.colorScheme
   val pills = remember(track) { audioPills(track) }
+  // AMOLED Black: skip the ambient glow so the backdrop stays pure black.
+  val amoledMode by koinInject<AppearancePreferences>().amoledMode.collectAsState()
 
   BoxWithConstraints(
     modifier = modifier
       .fillMaxSize()
       .background(Color.Black)
-      .background(
-        Brush.radialGradient(
-          colors = listOf(colors.primary.copy(alpha = 0.28f), Color.Transparent),
-        ),
+      .then(
+        if (amoledMode) {
+          Modifier
+        } else {
+          Modifier.background(
+            Brush.radialGradient(
+              colors = listOf(colors.primary.copy(alpha = 0.28f), Color.Transparent),
+            ),
+          )
+        },
       ),
     contentAlignment = Alignment.Center,
   ) {
