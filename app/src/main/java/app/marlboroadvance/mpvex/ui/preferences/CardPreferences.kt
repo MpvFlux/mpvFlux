@@ -7,9 +7,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntRect
@@ -57,31 +64,80 @@ fun PreferenceIcon(
 /** Fixed square the row icon is centered in, so icons line up in one column. */
 private val PreferenceIconSlot = 40.dp
 
-/** Space between the rows of a [PreferenceCard]; a thin divider is drawn in it. */
-private val PreferenceCardGap = 1.dp
+/** Space between the tiles of a [PreferenceCard]. */
+private val PreferenceTileGap = 4.dp
 
-/** Horizontal inset of the dividers between rows. */
-private val PreferenceDividerInset = 16.dp
+/** Corner radius of the outer corners of a [PreferenceCard] (top of first tile, bottom of last). */
+private val PreferenceTileOuterRadius = 24.dp
+
+/** Corner radius of the corners where two tiles meet. */
+private val PreferenceTileInnerRadius = 4.dp
 
 /** Space the screen background leaves on the left and right of a section card. */
 private val PreferenceCardMargin = 16.dp
 
+/** Start inset of section headers: the left edge of the row icons (card margin + row padding + icon slot inset). */
+private val PreferenceHeaderStartInset = 40.dp
+
+/** Union of one rounded rectangle per tile, so background and ripple clip follow the tiles. */
+private class SegmentedTilesShape(
+    private val tiles: List<IntRect>,
+    private val outerRadius: Float,
+    private val innerRadius: Float,
+) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val path = Path()
+        tiles.forEachIndexed { index, rect ->
+            val top = if (index == 0) outerRadius else innerRadius
+            val bottom = if (index == tiles.lastIndex) outerRadius else innerRadius
+            path.addRoundRect(
+                RoundRect(
+                    left = rect.left.toFloat(),
+                    top = rect.top.toFloat(),
+                    right = rect.right.toFloat(),
+                    bottom = rect.bottom.toFloat(),
+                    topLeftCornerRadius = CornerRadius(top),
+                    topRightCornerRadius = CornerRadius(top),
+                    bottomRightCornerRadius = CornerRadius(bottom),
+                    bottomLeftCornerRadius = CornerRadius(bottom),
+                ),
+            )
+        }
+        return Outline.Generic(path)
+    }
+}
+
 /**
- * Section container: one rounded `surfaceContainer` card inset from the screen edges, with thin
- * dividers between rows. Rows are clipped to the card so ripples follow its corners. In AMOLED
- * mode (the theme sets `surface` to pure black) the card is pure black, with no outline.
+ * Section container: every direct child becomes its own rounded `surfaceContainer` tile, inset
+ * from the screen edges. Outer corners are large, corners between tiles are small. Rows are
+ * clipped to the tiles so ripples follow the corners. In AMOLED mode (the theme sets `surface`
+ * to pure black) the tiles are pure black, with no outline.
+ *
+ * With [grouped] the children share one rounded container (large corners on all sides, no gap,
+ * no dividers) instead of separate tiles.
  */
 @Composable
 fun PreferenceCard(
     modifier: Modifier = Modifier,
+    grouped: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.large
     val amoled = colors.surface == Color.Black
     val fillColor = if (amoled) Color.Black else colors.surfaceContainer
-    val dividerColor = colors.outlineVariant
     var bounds by remember { mutableStateOf<List<IntRect>>(emptyList()) }
+    val density = LocalDensity.current
+    val shape: Shape = remember(bounds, density, grouped) {
+        if (grouped || bounds.isEmpty()) {
+            RoundedCornerShape(PreferenceTileOuterRadius)
+        } else {
+            SegmentedTilesShape(
+                tiles = bounds,
+                outerRadius = with(density) { PreferenceTileOuterRadius.toPx() },
+                innerRadius = with(density) { PreferenceTileInnerRadius.toPx() },
+            )
+        }
+    }
 
     Layout(
         content = content,
@@ -89,19 +145,7 @@ fun PreferenceCard(
             .fillMaxWidth()
             .padding(horizontal = PreferenceCardMargin)
             .clip(shape)
-            .background(fillColor)
-            .drawBehind {
-                val inset = PreferenceDividerInset.toPx()
-                val thickness = PreferenceCardGap.toPx()
-                bounds.forEachIndexed { index, rect ->
-                    if (index == 0) return@forEachIndexed
-                    drawRect(
-                        color = dividerColor,
-                        topLeft = Offset(inset, rect.top - thickness),
-                        size = Size(size.width - inset * 2, thickness),
-                    )
-                }
-            },
+            .background(fillColor),
     ) { measurables, constraints ->
         val width = constraints.maxWidth
         val childConstraints = Constraints(
@@ -110,8 +154,9 @@ fun PreferenceCard(
             minHeight = 0,
             maxHeight = constraints.maxHeight,
         )
-        val placeables = measurables.map { it.measure(childConstraints) }
-        val gap = PreferenceCardGap.roundToPx()
+        // Zero-height children (for example a dialog emitted inside the card) get no tile.
+        val placeables = measurables.map { it.measure(childConstraints) }.filter { it.height > 0 }
+        val gap = if (grouped) 0 else PreferenceTileGap.roundToPx()
         val rects = ArrayList<IntRect>(placeables.size)
         var y = 0
         placeables.forEach { placeable ->
@@ -205,7 +250,7 @@ fun PreferenceSectionHeader(
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Medium,
-        modifier = modifier.padding(start = 32.dp, top = 12.dp, bottom = 6.dp),
+        modifier = modifier.padding(start = PreferenceHeaderStartInset, top = 24.dp, bottom = 8.dp),
     )
 }
 
@@ -239,7 +284,7 @@ fun PreferenceTopBar(
     val colors = TopAppBarDefaults.topAppBarColors(
         containerColor = containerColor,
         scrolledContainerColor = scrolledContainerColor,
-        titleContentColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
     )
     if (large) {
         LargeTopAppBar(

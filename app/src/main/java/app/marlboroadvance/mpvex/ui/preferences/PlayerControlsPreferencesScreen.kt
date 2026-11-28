@@ -114,7 +114,7 @@ object PlayerControlsPreferencesScreen : Screen {
             title = {
               Text(
                 text = stringResource(id = R.string.pref_layout_title),
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onSurface,
               )
             },
             navigationIcon = {
@@ -122,7 +122,7 @@ object PlayerControlsPreferencesScreen : Screen {
                 Icon(
                   Icons.AutoMirrored.Outlined.ArrowBack, 
                   contentDescription = stringResource(R.string.back),
-                  tint = MaterialTheme.colorScheme.secondary,
+                  tint = MaterialTheme.colorScheme.onSurface,
                 )
               }
             },
@@ -138,8 +138,8 @@ object PlayerControlsPreferencesScreen : Screen {
             contentPadding = PaddingValues(
                 top = padding.calculateTopPadding(),
                 bottom = padding.calculateBottomPadding() + 24.dp,
-                start = 8.dp,
-                end = 8.dp
+                start = 0.dp,
+                end = 0.dp
             )
           ) {
             item {

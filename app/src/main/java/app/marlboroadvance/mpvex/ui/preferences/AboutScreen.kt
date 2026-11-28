@@ -210,7 +210,7 @@ object AboutScreen : Screen {
             title = {
               Text(
                 text = stringResource(R.string.pref_about_title),
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onSurface,
               )
             },
             navigationIcon = {
@@ -218,7 +218,7 @@ object AboutScreen : Screen {
                 Icon(
                   imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                   contentDescription = stringResource(R.string.back),
-                  tint = MaterialTheme.colorScheme.secondary,
+                  tint = MaterialTheme.colorScheme.onSurface,
                 )
               }
             },

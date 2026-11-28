@@ -116,7 +116,7 @@ object PreferencesScreen : Screen {
                     title = {
                         Text(
                             text = stringResource(R.string.pref_settings_title),
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     },
                     navigationIcon = {
@@ -124,7 +124,7 @@ object PreferencesScreen : Screen {
                             Icon(
                                 Icons.AutoMirrored.Outlined.ArrowBack, 
                                 contentDescription = stringResource(R.string.back),
-                                tint = MaterialTheme.colorScheme.secondary
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     },
@@ -139,8 +139,8 @@ object PreferencesScreen : Screen {
                 contentPadding = PaddingValues(
                     top = padding.calculateTopPadding(),
                     bottom = padding.calculateBottomPadding() + 24.dp,
-                    start = 8.dp,
-                    end = 8.dp
+                    start = 0.dp,
+                    end = 0.dp
                 )
             ) {
                 item {
@@ -332,9 +332,12 @@ fun SearchField(
         },
         expanded = false,
         onExpandedChange = {},
+        colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         content = {},
     )
 }
@@ -417,7 +420,7 @@ private fun SearchResultItem(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp)
+            .padding(horizontal = 8.dp, vertical = 2.dp)
             .scale(scale),
         onClick = onClick,
         interactionSource = interactionSource,

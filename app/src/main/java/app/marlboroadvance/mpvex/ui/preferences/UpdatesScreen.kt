@@ -108,7 +108,7 @@ object UpdatesScreen : Screen {
           title = {
             Text(
               text = stringResource(R.string.update_title),
-              color = MaterialTheme.colorScheme.primary,
+              color = MaterialTheme.colorScheme.onSurface,
             )
           },
           navigationIcon = {
@@ -116,7 +116,7 @@ object UpdatesScreen : Screen {
               Icon(
                 ImageVector.vectorResource(R.drawable.ic_sym_arrow_back),
                 contentDescription = stringResource(R.string.back),
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           },
@@ -131,8 +131,8 @@ object UpdatesScreen : Screen {
           modifier = Modifier.fillMaxSize().readableContentWidth(),
           contentPadding = PaddingValues(
             bottom = padding.calculateBottomPadding() + 24.dp,
-            start = 8.dp,
-            end = 8.dp,
+            start = 0.dp,
+            end = 0.dp,
           ),
         ) {
           item { StatusCard(state = state, manager = manager, lastCheck = lastCheck) }

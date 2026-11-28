@@ -76,7 +76,7 @@ object AppearancePreferencesScreen : Screen {
                         title = {
                             Text(
                                 text = stringResource(R.string.pref_appearance_title),
-                                color = MaterialTheme.colorScheme.primary,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                         },
                         navigationIcon = {
@@ -84,7 +84,7 @@ object AppearancePreferencesScreen : Screen {
                                 Icon(
                                     Icons.AutoMirrored.Outlined.ArrowBack,
                                     contentDescription = stringResource(R.string.back),
-                                    tint = MaterialTheme.colorScheme.secondary,
+                                    tint = MaterialTheme.colorScheme.onSurface,
                                 )
                             }
                         },
@@ -100,8 +100,8 @@ object AppearancePreferencesScreen : Screen {
                         contentPadding = PaddingValues(
                             top = padding.calculateTopPadding(),
                             bottom = padding.calculateBottomPadding() + 24.dp,
-                            start = 8.dp,
-                            end = 8.dp
+                            start = 0.dp,
+                            end = 0.dp
                         )
                     ) {
                         item {
@@ -120,7 +120,7 @@ object AppearancePreferencesScreen : Screen {
                         }
 
                         item {
-                            PreferenceCard {
+                            PreferenceCard(grouped = true) {
                                 val amoledMode by preferences.amoledMode.collectAsState()
 
                                 ThemePicker(

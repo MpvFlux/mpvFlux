@@ -127,7 +127,7 @@ object SubtitlesPreferencesScreen : Screen {
           title = {
             Text(
               text = stringResource(R.string.pref_subtitles),
-              color = MaterialTheme.colorScheme.primary,
+              color = MaterialTheme.colorScheme.onSurface,
             )
           },
           navigationIcon = {
@@ -137,7 +137,7 @@ object SubtitlesPreferencesScreen : Screen {
               Icon(
                 Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = stringResource(R.string.back),
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           },
